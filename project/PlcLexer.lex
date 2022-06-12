@@ -10,7 +10,7 @@ type lexresult = (slvalue, pos)token
 
 fun keyword (string, lpos, rpos) =
     case string of
-      "var"   => VAR(lpos, rpos)
+    "var"   => VAR(lpos, rpos)
     | "Bool"  => BOOL(lpos, rpos)
     | "else"  => ELSE(lpos, rpos)
     | "end"   => END(lpos, rpos)
@@ -50,7 +50,7 @@ fun eof () = Tokens.EOF(0,0)
 fun strToInt s =
     case Int.fromString s of
         SOME x => x
-        | NOME => raise Fail ("Wasn't albe to convert the string '"^s^"'to integer.")
+        | NOME => raise Fail ("Wasn't able to convert the string '"^s^"'to integer.")
 
 (* Initialize the lexer. *)
 fun init() = ()
