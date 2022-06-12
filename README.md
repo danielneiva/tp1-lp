@@ -1,4 +1,8 @@
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Logo_UFMG.png/320px-Logo_UFMG.png)
+
+<div align="center">
+<p>
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Logo_UFMG.png/320px-Logo_UFMG.png" alt="alt text" width="210" height="82">
+</p>
 
 # Linguagens de Programação
 ## Projeto 1 - PLC
@@ -7,6 +11,7 @@
 | [Introdução](#introdução) | [Integrantes](#integrantes) | [Tipos e Operadores](#tipos-operadores) | [Gramática Concreta](#gramatica-concreta)
 | - | - | - | - |
 
+</div>
 
 ### Introdução
 
