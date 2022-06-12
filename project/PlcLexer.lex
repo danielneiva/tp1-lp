@@ -47,6 +47,11 @@ fun getLineAsString() =
 (* Define what to do when the end of the file is reached. *)
 fun eof () = Tokens.EOF(0,0)
 
+fun strToInt s =
+    case Int.fromString s of
+        SOME x => x
+        | NOME => raise Fail ("Wasn't albe to convert the string '"^s^"'to integer.")
+
 (* Initialize the lexer. *)
 fun init() = ()
 %%
@@ -70,20 +75,22 @@ identifier = [a-zA-Z_][a-zA-Z_0-9]*;
 "-"  => (MINUS(yypos, yypos));
 "*"  => (TIMES(yypos, yypos));
 "/"  => (DIV(yypos, yypos));
-"="  => (EQ(yypos, yypos));
-"!=" => (DIF(yypos, yypos));
+"="  => (EQUAL(yypos, yypos));
+"!=" => (NEQUAL(yypos, yypos));
 "<"  => (LT(yypos, yypos));
-"<=" => (LEQ(yypos,yypos));
+"<=" => (LTE(yypos,yypos));
 "::" => (CONS(yypos,yypos));
-";"  => (SEMIC(yypos, yypos));
+";"  => (SEMICOL(yypos, yypos));
 "["  => (LBRACK(yypos, yypos));
 "]"  => (RBRACK(yypos, yypos));
 ","  => (COMMA(yypos, yypos));
 "{"  => (LBRACE(yypos, yypos));
 "}"  => (RBRACE(yypos, yypos));
-"("  => (LPAR(yypos, yypos));
-")"  => (RPAR(yypos, yypos));
-"|"  => (BAR(yypos, yypos));
+"("  => (LPAREN(yypos, yypos));
+")"  => (RPAREN(yypos, yypos));
+"|"  => (VBAR(yypos, yypos));
 "=>" => (EQARROW(yypos, yypos));
 "->" => (ARROW(yypos, yypos));
 ":"  => (COLON(yypos, yypos));
+
+. =>(error("\n***Lexer error: bad character *** \n"); raise Fail ("Lexer error: bad character" ^ yytext));
