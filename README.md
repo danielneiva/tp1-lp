@@ -24,3 +24,11 @@ Este trabalho consolida o aprendizado da disciplina de Linguagens de ProgramaÃ§Ã
 - Vinicius Rodrigues
 
 > Professor: Haniel Barbosa
+
+
+
+### Compilar
+> Execute no terminal: ml-lex PlcLexer.lex
+> Execute no terminal: ml-yacc PlcParser.yacc
+> Execute: sml fullTest.sml
+
