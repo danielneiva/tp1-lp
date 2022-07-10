@@ -8,14 +8,62 @@ exception NotAFunc
 
 fun eval (e:expr) (st:plcVal env) : plcVal =
   case e of
-      ConI(i) => IntV i
-    | ConB(b) => BoolV b
-    | ESeq(t) => SeqV []
-    | Var(name) => lookup st name
+	  Var x => lookup st x
+    | ConI i => IntV i
+    | ConB b => BoolV b
+	| List(items) =>
+      let
+        fun evalList (items:expr list) (st:plcVal env) : plcVal list =
+          case items of
+            [] => []
+          | xs::t => (eval xs st)::(evalList t st)
+      in
+        ListV (evalList items st)
+      end
+    | ESeq t => SeqV []
     | Let(name, value, exp) => eval exp ((name, (eval value st))::st)
     | Letrec(funcname, vartype, varname, functype, funcbody, prog) =>
       eval prog ((funcname, Clos (funcname, varname, funcbody, st))::st)
-    | Prim1 (oper, exp) =>
+    | Anon(vartype, varname, funcbody) => Clos("", varname, funcbody, st)
+	| Call(funcname, valexp) =>
+      let
+        val funcclosure = eval funcname st;
+      in
+        case funcclosure of 
+          Clos(funcname, varname, funcbody, funcst) =>
+            let
+              val value = eval valexp st;
+              val recst = (varname, value)::(funcname, funcclosure)::funcst
+            in
+              eval funcbody recst
+            end
+        | _ => raise NotAFunc
+      end
+	| If(cond, thenexp, elsexp) =>
+      let
+        val test = eval cond st
+      in
+        case test of
+          (BoolV result) => if result then (eval thenexp st) else (eval elsexp st)
+        | _ => raise Impossible
+      end
+    | Match(exp, options) =>
+      let
+        val what = eval exp st;
+        fun tryMatch (next::rest) : plcVal =
+            (case next of
+              (SOME(condexp), option) =>
+                let
+                  val cond = eval condexp st
+                in
+                  if what = cond then eval option st else tryMatch rest
+                end
+            | (NONE, option) => eval option st)
+          | tryMatch [] = raise ValueNotFoundInMatch;
+      in
+        tryMatch options
+      end
+	| Prim1 (oper, exp) =>
       let
         val value = eval exp st
       in
@@ -100,53 +148,6 @@ fun eval (e:expr) (st:plcVal env) : plcVal =
         | (";") => val2
         | _ => raise Impossible
       end
-    | If(cond, thenexp, elsexp) =>
-      let
-        val test = eval cond st
-      in
-        case test of
-          (BoolV result) => if result then (eval thenexp st) else (eval elsexp st)
-        | _ => raise Impossible
-      end
-    | Match(exp, options) =>
-      let
-        val what = eval exp st;
-        fun tryMatch (next::rest) : plcVal =
-            (case next of
-              (SOME(condexp), option) =>
-                let
-                  val cond = eval condexp st
-                in
-                  if what = cond then eval option st else tryMatch rest
-                end
-            | (NONE, option) => eval option st)
-          | tryMatch [] = raise ValueNotFoundInMatch;
-      in
-        tryMatch options
-      end
-    | Call(funcname, valexp) =>
-      let
-        val funcclosure = eval funcname st;
-      in
-        case funcclosure of 
-          Clos(funcname, varname, funcbody, funcst) =>
-            let
-              val value = eval valexp st;
-              val recst = (varname, value)::(funcname, funcclosure)::funcst
-            in
-              eval funcbody recst
-            end
-        | _ => raise NotAFunc
-      end
-    | List(items) =>
-      let
-        fun evalList (items:expr list) (st:plcVal env) : plcVal list =
-          case items of
-            [] => []
-          | xs::t => (eval xs st)::(evalList t st)
-      in
-        ListV (evalList items st)
-      end
     | Item(index, itemexpr) =>
       let
         val itemeval = eval itemexpr st;
@@ -157,5 +158,5 @@ fun eval (e:expr) (st:plcVal env) : plcVal =
         case itemeval of
           ListV(items) => findIndex 1 items
         | _ => raise Impossible
-      end
-    | Anon(vartype, varname, funcbody) => Clos("", varname, funcbody, st);
+    	end
+	;
