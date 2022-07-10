@@ -317,7 +317,7 @@ exception OpNonList
 val isSeqType = fn : plcType -> bool
 val isEqualityType = fn : plcType -> bool
 val isListType = fn : plcType -> bool
-PlcChecker.sml:204.15-206.57 Warning: match nonexhaustive
+PlcChecker.sml:197.15-199.57 Warning: match nonexhaustive
           (i,ListT nil) => ...
           (1,ListT (h :: t)) => ...
           (i,ListT (h :: t)) => ...
@@ -829,19 +829,6 @@ val it = () : unit
 val interpFile = - : TextIO.outstream
 val caseIdx = ref 1 : int ref
 val writeResult = fn : expr -> unit
-2
-8
-2
-8
-4
-3
-6
-5
-4
-3
-2
-1
-0
 val it =
   [(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),
    (),(),(),(),(),(),(),(),(),()] : unit list
