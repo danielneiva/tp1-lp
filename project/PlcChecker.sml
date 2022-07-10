@@ -188,6 +188,13 @@ fun teval (e:expr) (env:plcType env): plcType =
         in
           if not (isEqualityType te1) orelse not (isEqualityType te2) then raise UnknownType else if te1 = te2 then BoolT else raise NotEqTypes
         end
+    | Prim2 (";", e1, e2) => (* 26 *)
+        let
+          val t1 = teval e1 env
+          val t2 = teval e2 env
+        in
+          t2
+        end
     | Item (i, List []) => raise ListOutOfRange (* 25 *)
     | Item (1, List (h::t)) => teval h env
     | Item (i, List (h::t)) => teval (Item (i-1, (List t))) env
