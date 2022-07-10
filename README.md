@@ -28,7 +28,7 @@ Este trabalho consolida o aprendizado da disciplina de Linguagens de ProgramaÃ§Ã
 
 
 ### Compilar
-> Execute no terminal: ml-lex PlcLexer.lex
-> Execute no terminal: ml-yacc PlcParser.yacc
-> Execute: sml fullTest.sml
+- Execute no terminal: ml-lex PlcLexer.lex
+- Execute no terminal: ml-yacc PlcParser.yacc
+- Execute: sml fullTest.sml
 
