@@ -10,7 +10,7 @@ type lexresult = (slvalue, pos)token
 
 fun keyword (string, lpos, rpos) =
     case string of
-    "var"   => VAR(lpos, rpos)
+      "var"   => VAR(lpos, rpos)
     | "Bool"  => BOOL(lpos, rpos)
     | "else"  => ELSE(lpos, rpos)
     | "end"   => END(lpos, rpos)

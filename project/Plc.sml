@@ -1,11 +1,11 @@
 (* Plc interpreter main file *)
 
-fun run (e: expr) : string =
+fun run e =
     let 
-        val type  =  teval e [];
-        val value =  eval  e [] 
+        val typeE  =  type2string(teval e [])
+        val valueE =  val2string(eval  e []) 
     in
-        (type2string value)^":"^(type2string type)
+        (valueE)^":"^(typeE)
     end
     handle
          SymbolNotFound         => "Simbolo não encontrado"
@@ -27,4 +27,4 @@ fun run (e: expr) : string =
        | HDEmptySeq             => "HD chamado em uma sequência vazia"
        | TLEmptySeq             => "TL chamado em uma sequência vazia"
        | ValueNotFoundInMatch   => "Valor não encontrado no Match"
-       | NotAFunc               => "A expressão inserida não é uma função";
+       | NotAFunc               => "A expressão inserida não é uma função"

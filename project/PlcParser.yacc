@@ -4,21 +4,21 @@
 
 %pos int
 
-%term VAR | FUN | REC | FN | END
+%term VAR | FUN | REC | END |  FN
+  | NOT | AND
+  | PLUS | MINUS | TIMES | DIV
+  | EQUAL | NEQUAL | LTE | LT
+  | COLON | SEMICOL | ARROW | EQARROW | COMMA
   | IF | THEN | ELSE
   | MATCH | WITH
-  | NOT | AND
-  | UNDER | VBAR
   | HD | TL | ISE | CONS
   | PRINT
-  | PLUS | MINUS | TIMES | DIV
-  | EQUAL | NEQUAL | LT | LTE
-  | COLON | SEMICOL | EQARROW | COMMA | ARROW 
-  | LBRACK | RBRACK
-  | LBRACE | RBRACE
-  | LPAREN | RPAREN
+  | RPAREN | LPAREN
+  | RBRACK | LBRACK
+  | RBRACE | LBRACE
+  | VBAR | UNDER 
+  | NIL | BOOL | INT
   | TRUE | FALSE
-  | NIL | INT | BOOL 
   | NAME of string | NAT of int
   | EOF
 
@@ -38,9 +38,18 @@
   | ATOMICTYPE of plcType
   | TYPES of plcType list
 
-%right SEMICOL ARROW CONS
-%left ELSE AND EQUAL NEQUAL LT LTE PLUS MINUS TIMES DIV LBRACK
-%nonassoc IF NOT HD TL ISE PRINT NAME
+%right SEMICOL ARROW
+%nonassoc IF
+%left ELSE
+%left AND 
+%left EQUAL NEQUAL 
+%left LT LTE
+%right CONS
+%left PLUS MINUS 
+%left TIMES DIV
+%nonassoc NOT HD TL ISE PRINT NAME
+%left LBRACK
+
 
 %eop EOF
 

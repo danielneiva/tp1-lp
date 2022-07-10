@@ -1,0 +1,850 @@
+Standard ML of New Jersey v110.79 [built: Sat Oct 26 12:27:04 2019]
+[opening ./fullTest.sml]
+[autoloading]
+[library $smlnj/cm/cm.cm is stable]
+[library $smlnj/internal/cm-sig-lib.cm is stable]
+[library $/pgraph.cm is stable]
+[library $smlnj/internal/srcpath-lib.cm is stable]
+[library $SMLNJ-BASIS/basis.cm is stable]
+[library $SMLNJ-BASIS/(basis.cm):basis-common.cm is stable]
+[autoloading done]
+[New bindings added.]
+val it = true : bool
+[library $/ml-yacc-lib.cm is stable]
+[library $SMLNJ-ML-YACC-LIB/ml-yacc-lib.cm is stable]
+[New bindings added.]
+val it = true : bool
+[opening Environ.sml]
+exception SymbolNotFound
+type 'a env = (string * 'a) list
+val lookup = fn : (string * 'a) list -> string -> 'a
+val it = () : unit
+[opening Absyn.sml]
+datatype plcType
+  = BoolT
+  | FunT of plcType * plcType
+  | IntT
+  | ListT of plcType list
+  | SeqT of plcType
+datatype expr
+  = Anon of plcType * string * expr
+  | Call of expr * expr
+  | ConB of bool
+  | ConI of int
+  | ESeq of plcType
+  | If of expr * expr * expr
+  | Item of int * expr
+  | Let of string * expr * expr
+  | Letrec of string * plcType * string * plcType * expr * expr
+  | List of expr list
+  | Match of expr * (expr option * expr) list
+  | Prim1 of string * expr
+  | Prim2 of string * expr * expr
+  | Var of string
+datatype plcVal
+  = BoolV of bool
+  | Clos of string * string * expr * (string * plcVal) list
+  | IntV of int
+  | ListV of plcVal list
+  | SeqV of plcVal list
+val list2string = fn : ('a -> string) * 'a list -> string
+val type2string = fn : plcType -> string
+val val2string = fn : plcVal -> string
+val it = () : unit
+[opening PlcParserAux.sml]
+val makeFunAux = fn : int * (plcType * string) list * expr -> expr
+val makeType = fn : (plcType * string) list -> plcType
+val makeFun = fn
+  : string * (plcType * string) list * plcType * expr * expr -> expr
+val makeAnon = fn : (plcType * string) list * expr -> expr
+val it = () : unit
+[opening PlcParser.yacc.sig]
+signature PlcParser_TOKENS =
+  sig
+    type ('a,'b) token
+    type svalue
+    val EOF : 'a * 'a -> (svalue,'a) token
+    val NAT : int * 'a * 'a -> (svalue,'a) token
+    val NAME : string * 'a * 'a -> (svalue,'a) token
+    val FALSE : 'a * 'a -> (svalue,'a) token
+    val TRUE : 'a * 'a -> (svalue,'a) token
+    val INT : 'a * 'a -> (svalue,'a) token
+    val BOOL : 'a * 'a -> (svalue,'a) token
+    val NIL : 'a * 'a -> (svalue,'a) token
+    val UNDER : 'a * 'a -> (svalue,'a) token
+    val VBAR : 'a * 'a -> (svalue,'a) token
+    val LBRACE : 'a * 'a -> (svalue,'a) token
+    val RBRACE : 'a * 'a -> (svalue,'a) token
+    val LBRACK : 'a * 'a -> (svalue,'a) token
+    val RBRACK : 'a * 'a -> (svalue,'a) token
+    val LPAREN : 'a * 'a -> (svalue,'a) token
+    val RPAREN : 'a * 'a -> (svalue,'a) token
+    val PRINT : 'a * 'a -> (svalue,'a) token
+    val CONS : 'a * 'a -> (svalue,'a) token
+    val ISE : 'a * 'a -> (svalue,'a) token
+    val TL : 'a * 'a -> (svalue,'a) token
+    val HD : 'a * 'a -> (svalue,'a) token
+    val WITH : 'a * 'a -> (svalue,'a) token
+    val MATCH : 'a * 'a -> (svalue,'a) token
+    val ELSE : 'a * 'a -> (svalue,'a) token
+    val THEN : 'a * 'a -> (svalue,'a) token
+    val IF : 'a * 'a -> (svalue,'a) token
+    val COMMA : 'a * 'a -> (svalue,'a) token
+    val EQARROW : 'a * 'a -> (svalue,'a) token
+    val ARROW : 'a * 'a -> (svalue,'a) token
+    val SEMICOL : 'a * 'a -> (svalue,'a) token
+    val COLON : 'a * 'a -> (svalue,'a) token
+    val LT : 'a * 'a -> (svalue,'a) token
+    val LTE : 'a * 'a -> (svalue,'a) token
+    val NEQUAL : 'a * 'a -> (svalue,'a) token
+    val EQUAL : 'a * 'a -> (svalue,'a) token
+    val DIV : 'a * 'a -> (svalue,'a) token
+    val TIMES : 'a * 'a -> (svalue,'a) token
+    val MINUS : 'a * 'a -> (svalue,'a) token
+    val PLUS : 'a * 'a -> (svalue,'a) token
+    val AND : 'a * 'a -> (svalue,'a) token
+    val NOT : 'a * 'a -> (svalue,'a) token
+    val FN : 'a * 'a -> (svalue,'a) token
+    val END : 'a * 'a -> (svalue,'a) token
+    val REC : 'a * 'a -> (svalue,'a) token
+    val FUN : 'a * 'a -> (svalue,'a) token
+    val VAR : 'a * 'a -> (svalue,'a) token
+  end
+signature PlcParser_LRVALS =
+  sig
+    structure Tokens :
+      sig
+        type ('a,'b) token
+        type svalue
+        val EOF : 'a * 'a -> (svalue,'a) token
+        val NAT : int * 'a * 'a -> (svalue,'a) token
+        val NAME : string * 'a * 'a -> (svalue,'a) token
+        val FALSE : 'a * 'a -> (svalue,'a) token
+        val TRUE : 'a * 'a -> (svalue,'a) token
+        val INT : 'a * 'a -> (svalue,'a) token
+        val BOOL : 'a * 'a -> (svalue,'a) token
+        val NIL : 'a * 'a -> (svalue,'a) token
+        val UNDER : 'a * 'a -> (svalue,'a) token
+        val VBAR : 'a * 'a -> (svalue,'a) token
+        val LBRACE : 'a * 'a -> (svalue,'a) token
+        val RBRACE : 'a * 'a -> (svalue,'a) token
+        val LBRACK : 'a * 'a -> (svalue,'a) token
+        val RBRACK : 'a * 'a -> (svalue,'a) token
+        val LPAREN : 'a * 'a -> (svalue,'a) token
+        val RPAREN : 'a * 'a -> (svalue,'a) token
+        val PRINT : 'a * 'a -> (svalue,'a) token
+        val CONS : 'a * 'a -> (svalue,'a) token
+        val ISE : 'a * 'a -> (svalue,'a) token
+        val TL : 'a * 'a -> (svalue,'a) token
+        val HD : 'a * 'a -> (svalue,'a) token
+        val WITH : 'a * 'a -> (svalue,'a) token
+        val MATCH : 'a * 'a -> (svalue,'a) token
+        val ELSE : 'a * 'a -> (svalue,'a) token
+        val THEN : 'a * 'a -> (svalue,'a) token
+        val IF : 'a * 'a -> (svalue,'a) token
+        val COMMA : 'a * 'a -> (svalue,'a) token
+        val EQARROW : 'a * 'a -> (svalue,'a) token
+        val ARROW : 'a * 'a -> (svalue,'a) token
+        val SEMICOL : 'a * 'a -> (svalue,'a) token
+        val COLON : 'a * 'a -> (svalue,'a) token
+        val LT : 'a * 'a -> (svalue,'a) token
+        val LTE : 'a * 'a -> (svalue,'a) token
+        val NEQUAL : 'a * 'a -> (svalue,'a) token
+        val EQUAL : 'a * 'a -> (svalue,'a) token
+        val DIV : 'a * 'a -> (svalue,'a) token
+        val TIMES : 'a * 'a -> (svalue,'a) token
+        val MINUS : 'a * 'a -> (svalue,'a) token
+        val PLUS : 'a * 'a -> (svalue,'a) token
+        val AND : 'a * 'a -> (svalue,'a) token
+        val NOT : 'a * 'a -> (svalue,'a) token
+        val FN : 'a * 'a -> (svalue,'a) token
+        val END : 'a * 'a -> (svalue,'a) token
+        val REC : 'a * 'a -> (svalue,'a) token
+        val FUN : 'a * 'a -> (svalue,'a) token
+        val VAR : 'a * 'a -> (svalue,'a) token
+      end
+    structure ParserData :
+      sig
+        type pos
+        type svalue
+        type arg
+        type result
+        structure LrTable : <sig>
+        structure Token : <sig>
+        structure Actions : <sig>
+        structure EC : <sig>
+        val table : LrTable.table
+        sharing LrTable = Token.LrTable
+      end
+    sharing type Tokens.svalue = ParserData.svalue
+    sharing type Tokens.token = ParserData.Token.token
+  end
+val it = () : unit
+[opening PlcParser.yacc.sml]
+functor PlcParserLrValsFun(<param>: sig
+                                      structure Token : <sig>
+                                    end) :
+                          sig
+                            structure ParserData : <sig>
+                            structure Tokens : <sig>
+                          end
+val it = () : unit
+[opening PlcLexer.lex.sml]
+functor PlcLexerFun(<param>: sig
+                               structure Tokens : <sig>
+                             end) :
+                   sig
+                     structure UserDeclarations : <sig>
+                     exception LexError
+                     structure Internal : <sig>
+                     val makeLexer : (int -> string)
+                                     -> unit -> Internal.result
+                   end
+val it = () : unit
+[opening Parse.sml]
+structure PlcFrontEnd :
+  sig
+    structure PlcFELrVals : <sig>
+    structure PlcLexer : <sig>
+    structure PlcParser : <sig>
+    val invoke : (PlcParser.svalue,PlcParser.pos) LrParser.Token.token 
+                   ?.LrParser.stream
+                 -> PlcParser.result * 
+                    (PlcParser.svalue,PlcParser.pos) LrParser.Token.token 
+                      ?.LrParser.stream
+    val newLexer : (int -> string)
+                   -> (PlcParser.svalue,PlcParser.pos) LrParser.Token.token 
+                        ?.LrParser.stream
+    val stringToLexer : string
+                        -> (PlcParser.svalue,PlcParser.pos) 
+                             LrParser.Token.token ?.LrParser.stream
+    val fileToLexer : string
+                      -> (PlcParser.svalue,PlcParser.pos) LrParser.Token.token 
+                           ?.LrParser.stream
+    val lexerToParser : (PlcParser.svalue,PlcParser.pos) LrParser.Token.token 
+                          ?.LrParser.stream
+                        -> expr
+    val fromString : string -> expr
+    val fromFile : string -> expr
+  end
+val it = () : unit
+[autoloading]
+[library $smlnj/compiler/current.cm is stable]
+[library $smlnj/compiler/x86.cm is stable]
+[library $smlnj/viscomp/core.cm is stable]
+[library $smlnj/viscomp/basics.cm is stable]
+[library $smlnj/viscomp/elabdata.cm is stable]
+[library $smlnj/viscomp/elaborate.cm is stable]
+[library $smlnj/MLRISC/Lib.cm is stable]
+[library $SMLNJ-MLRISC/Lib.cm is stable]
+[library $smlnj/smlnj-lib/pp-lib.cm is stable]
+[library $SMLNJ-LIB/PP/pp-lib.cm is stable]
+[library $html-lib.cm(=$SMLNJ-LIB/HTML)/html-lib.cm is stable]
+[library $smlnj-lib.cm(=$SMLNJ-LIB/Util)/smlnj-lib.cm is stable]
+[library $smlnj/viscomp/debugprof.cm is stable]
+[library $smlnj/MLRISC/Control.cm is stable]
+[library $SMLNJ-MLRISC/Control.cm is stable]
+[library $controls-lib.cm(=$SMLNJ-LIB/Controls)/controls-lib.cm is stable]
+[library $smlnj/smlnj-lib/controls-lib.cm is stable]
+[autoloading done]
+val it = () : unit
+val it = () : unit
+val it = () : unit
+opening PlcFrontEnd
+  structure PlcFELrVals :
+    sig
+      structure ParserData : <sig>
+      structure Tokens : <sig>
+    end
+  structure PlcLexer :
+    sig
+      structure UserDeclarations : <sig>
+      exception LexError
+      structure Internal : <sig>
+      val makeLexer : (int -> string) -> unit -> Internal.result
+    end
+  structure PlcParser :
+    sig
+      structure Token : <sig>
+      structure Stream : <sig>
+      exception ParseError
+      type pos = pos
+      type result = result
+      type arg = arg
+      type svalue = svalue
+      val makeLexer : (int -> string)
+                      -> (svalue,pos) Token.token Stream.stream
+      val parse : int * (svalue,pos) Token.token Stream.stream * 
+                  (string * pos * pos -> unit) * arg
+                  -> result * (svalue,pos) Token.token Stream.stream
+      val sameToken : (svalue,pos) Token.token * (svalue,pos) Token.token
+                      -> bool
+    end
+  val invoke : (PlcFrontEnd.PlcParser.svalue,PlcFrontEnd.PlcParser.pos) 
+                 LrParser.Token.token ?.LrParser.stream
+               -> PlcFrontEnd.PlcParser.result * 
+                  (PlcFrontEnd.PlcParser.svalue,PlcFrontEnd.PlcParser.pos) 
+                    LrParser.Token.token ?.LrParser.stream
+  val newLexer : (int -> string)
+                 -> (PlcFrontEnd.PlcParser.svalue,PlcFrontEnd.PlcParser.pos) 
+                      LrParser.Token.token ?.LrParser.stream
+  val stringToLexer : string
+                      -> (PlcFrontEnd.PlcParser.svalue,
+                          PlcFrontEnd.PlcParser.pos) LrParser.Token.token 
+                           ?.LrParser.stream
+  val fileToLexer : string
+                    -> (PlcFrontEnd.PlcParser.svalue,PlcFrontEnd.PlcParser.pos) 
+                         LrParser.Token.token ?.LrParser.stream
+  val lexerToParser : (PlcFrontEnd.PlcParser.svalue,PlcFrontEnd.PlcParser.pos) 
+                        LrParser.Token.token ?.LrParser.stream
+                      -> expr
+  val fromString : string -> expr
+  val fromFile : string -> expr
+[opening PlcChecker.sml]
+exception EmptySeq
+exception UnknownType
+exception NotEqTypes
+exception WrongRetType
+exception DiffBrTypes
+exception IfCondNotBool
+exception NoMatchResults
+exception MatchResTypeDiff
+exception MatchCondTypesDiff
+exception CallTypeMisM
+exception NotFunc
+exception ListOutOfRange
+exception OpNonList
+val isSeqType = fn : plcType -> bool
+val isEqualityType = fn : plcType -> bool
+val isListType = fn : plcType -> bool
+PlcChecker.sml:204.15-206.57 Warning: match nonexhaustive
+          (i,ListT nil) => ...
+          (1,ListT (h :: t)) => ...
+          (i,ListT (h :: t)) => ...
+  
+val teval = fn : expr -> plcType env -> plcType
+val it = () : unit
+[opening PlcInterp.sml]
+exception Impossible
+exception HDEmptySeq
+exception TLEmptySeq
+exception ValueNotFoundInMatch
+exception NotAFunc
+val eval = fn : expr -> plcVal env -> plcVal
+val it = () : unit
+[opening Plc.sml]
+val run = fn : expr -> string
+val it = () : unit
+[opening testCases.sml]
+Case 1 parsed
+Case 2 parsed
+Case 3 parsed
+Case 4 parsed
+Case 5 parsed
+Case 6 parsed
+Case 7 parsed
+Case 8 parsed
+Case 9 parsed
+Case 10 parsed
+Case 11 parsed
+Case 12 parsed
+Case 13 parsed
+Case 14 parsed
+Case 15 parsed
+Case 16 parsed
+Case 17 parsed
+Case 18 parsed
+Case 19 parsed
+Case 20 parsed
+Case 21 parsed
+Case 22 parsed
+Case 23 parsed
+Case 24 parsed
+Case 25 parsed
+Case 26 parsed
+Case 27 parsed
+Case 28 parsed
+Case 29 parsed
+Case 30 parsed
+Case 31 parsed
+Case 32 parsed
+Case 33 parsed
+Case 34 parsed
+Case 35 parsed
+val cases =
+  [("fun highAdd(Int x) = fn(Int y) => x + y end; highAdd(3)(4)",
+    Let
+      ("highAdd",Anon (IntT,"x",Anon (IntT,"y",Prim2 ("+",Var "x",Var "y"))),
+       Call (Call (Var "highAdd",ConI 3),ConI 4))),
+   ("fun rec f(Int n):Int = if n <= 0 then 0 else n + f(n-1); f(15)",
+    Letrec
+      ("f",IntT,"n",IntT,
+       If
+         (Prim2 ("<=",Var "n",ConI 0),ConI 0,
+          Prim2 ("+",Var "n",Call (Var "f",Prim2 ("-",Var "n",ConI 1)))),
+       Call (Var "f",ConI 15))),
+   ("fn (Int x) => -x end",Anon (IntT,"x",Prim1 ("-",Var "x"))),
+   ("PlcPrograms/Prog1.plc",
+    Let
+      ("inc",Anon (IntT,"x",Prim2 ("+",Var "x",ConI 1)),
+       Let
+         ("add",
+          Anon
+            (ListT [IntT,IntT],"$list",
+             Let
+               ("x",Item (1,Var "$list"),
+                Let ("y",Item (2,Var "$list"),Prim2 ("+",Var "x",Var "y")))),
+          Let
+            ("cadd",
+             Anon (IntT,"x",Anon (IntT,"y",Prim2 ("+",Var "x",Var "y"))),
+             Let
+               ("y",Call (Var "add",List [ConI 3,Call (Var "inc",ConI 4)]),
+                Let
+                  ("x",
+                   Call (Call (Var "cadd",ConI 3),Prim2 ("-",ConI 7,Var "y")),
+                   Let
+                     ("z",Prim2 ("*",Var "x",ConI 3),
+                      Letrec
+                        ("fac",IntT,"n",IntT,
+                         If
+                           (Prim2 ("=",Var "n",ConI 0),ConI 1,
+                            Prim2
+                              ("*",Var "n",
+                               Call (Var "fac",Prim2 ("-",Var "n",ConI 1)))),
+                         Prim2
+                           (";",Prim1 ("print",Var "x"),
+                            Prim2
+                              (";",Prim1 ("print",Var "y"),
+                               Prim2
+                                 ("::",Var "x",
+                                  Prim2
+                                    ("::",Var "y",
+                                     Prim2
+                                       ("::",Var "z",
+                                        Prim2
+                                          ("::",Call (Var "fac",Var "z"),
+                                           ESeq (SeqT IntT))))))))))))))),
+   ("PlcPrograms/Prog2.plc",
+    Let
+      ("inc",Anon (IntT,"x",Prim2 ("+",Var "x",ConI 1)),
+       Let
+         ("add",
+          Anon
+            (ListT [IntT,IntT],"$list",
+             Let
+               ("x",Item (1,Var "$list"),
+                Let ("y",Item (2,Var "$list"),Prim2 ("+",Var "x",Var "y")))),
+          Let
+            ("cadd",
+             Anon (IntT,"x",Anon (IntT,"y",Prim2 ("+",Var "x",Var "y"))),
+             Let
+               ("y",Call (Var "add",List [ConI 3,Call (Var "inc",ConI 4)]),
+                Let
+                  ("x",
+                   Call (Call (Var "cadd",ConI 3),Prim2 ("-",ConI 7,Var "y")),
+                   Let
+                     ("z",Prim2 ("*",Var "x",ConI 3),
+                      Letrec
+                        ("fac",IntT,"n",IntT,
+                         Match
+                           (Var "n",
+                            [(SOME (ConI 0),ConI 1),(SOME (ConI 1),ConI 1),
+                             (NONE,
+                              Prim2
+                                ("*",Var "n",
+                                 Call (Var "fac",Prim2 ("-",Var "n",ConI 1))))]),
+                         Prim2
+                           (";",Prim1 ("print",Var "x"),
+                            Prim2
+                              (";",Prim1 ("print",Var "y"),
+                               Prim2
+                                 ("::",Var "x",
+                                  Prim2
+                                    ("::",Var "y",
+                                     Prim2
+                                       ("::",Var "z",
+                                        Prim2
+                                          ("::",Call (Var "fac",Var "z"),
+                                           ESeq (SeqT IntT))))))))))))))),
+   ("PlcPrograms/Prog3.plc",
+    Let
+      ("E",ESeq (SeqT IntT),
+       Let
+         ("reverse",
+          Anon
+            (SeqT IntT,"s",
+             Letrec
+               ("rev",ListT [SeqT IntT,SeqT IntT],"$list",SeqT IntT,
+                Let
+                  ("s1",Item (1,Var "$list"),
+                   Let
+                     ("s2",Item (2,Var "$list"),
+                      If
+                        (Prim1 ("ise",Var "s1"),Var "s2",
+                         Let
+                           ("h",Prim1 ("hd",Var "s1"),
+                            Let
+                              ("t",Prim1 ("tl",Var "s1"),
+                               Call
+                                 (Var "rev",
+                                  List [Var "t",Prim2 ("::",Var "h",Var "s2")])))))),
+                Call (Var "rev",List [Var "s",Var "E"]))),
+          Call
+            (Var "reverse",
+             Prim2
+               ("::",ConI 1,Prim2 ("::",ConI 2,Prim2 ("::",ConI 3,Var "E"))))))),
+   ("PlcPrograms/Prog4.plc",
+    Let
+      ("E",ESeq (SeqT IntT),
+       Let
+         ("reverse",
+          Anon
+            (SeqT IntT,"s",
+             Letrec
+               ("rev",ListT [SeqT IntT,SeqT IntT],"$list",SeqT IntT,
+                Let
+                  ("s1",Item (1,Var "$list"),
+                   Let
+                     ("s2",Item (2,Var "$list"),
+                      Match
+                        (Var "s1",
+                         [(SOME (Var "E"),Var "s2"),
+                          (NONE,
+                           Let
+                             ("h",Prim1 ("hd",Var "s1"),
+                              Let
+                                ("t",Prim1 ("tl",Var "s1"),
+                                 Call
+                                   (Var "rev",
+                                    List
+                                      [Var "t",Prim2 ("::",Var "h",Var "s2")]))))]))),
+                Call (Var "rev",List [Var "s",Var "E"]))),
+          Call
+            (Var "reverse",
+             Prim2
+               ("::",ConI 1,Prim2 ("::",ConI 2,Prim2 ("::",ConI 3,Var "E"))))))),
+   ("1::2::3::([Int] [])",
+    Prim2
+      ("::",ConI 1,Prim2 ("::",ConI 2,Prim2 ("::",ConI 3,ESeq (SeqT IntT))))),
+   ("PlcPrograms/Prog5.plc",
+    Let
+      ("twice",
+       Anon
+         (FunT (IntT,IntT),"f",
+          Anon (IntT,"x",Call (Var "f",Call (Var "f",Var "x")))),
+       Letrec
+         ("map",FunT (IntT,IntT),"f",FunT (SeqT IntT,SeqT IntT),
+          Anon
+            (SeqT IntT,"s",
+             If
+               (Prim1 ("ise",Var "s"),Var "s",
+                Prim2
+                  ("::",Call (Var "f",Prim1 ("hd",Var "s")),
+                   Call (Call (Var "map",Var "f"),Prim1 ("tl",Var "s"))))),
+          Let
+            ("square",Anon (IntT,"x",Prim2 ("*",Var "x",Var "x")),
+             Let
+               ("inc",Anon (IntT,"x",Prim2 ("+",Var "x",ConI 1)),
+                Let
+                  ("E",ESeq (SeqT IntT),
+                   Let
+                     ("s1",
+                      Call
+                        (Call
+                           (Var "map",
+                            Anon (IntT,"x",Prim2 ("*",ConI 2,Var "x"))),
+                         Prim2
+                           ("::",ConI 10,
+                            Prim2 ("::",ConI 20,Prim2 ("::",ConI 30,Var "E")))),
+                      Let
+                        ("s2",
+                         Call
+                           (Call (Var "map",Call (Var "twice",Var "inc")),
+                            Var "s1"),List [Var "s1",Var "s2"])))))))),
+   ("hd (1 :: 2 :: ([Int] []))",
+    Prim1 ("hd",Prim2 ("::",ConI 1,Prim2 ("::",ConI 2,ESeq (SeqT IntT))))),
+   ("fun next(Int y) = y + 1; next(6) = 7",
+    Let
+      ("next",Anon (IntT,"y",Prim2 ("+",Var "y",ConI 1)),
+       Prim2 ("=",Call (Var "next",ConI 6),ConI 7))),
+   ("var f = fn (Int -> Int g) => g(3) end; f",
+    Let ("f",Anon (FunT (IntT,IntT),"g",Call (Var "g",ConI 3)),Var "f")),
+   ("var f = fn (Int -> Int g) => g(3) end; f",
+    Let ("f",Anon (FunT (IntT,IntT),"g",Call (Var "g",ConI 3)),Var "f")),
+   ("var e = ([Int] []); var x = 1::2::e; x",
+    Let
+      ("e",ESeq (SeqT IntT),
+       Let ("x",Prim2 ("::",ConI 1,Prim2 ("::",ConI 2,Var "e")),Var "x"))),
+   ("var e = (1, !true);e",
+    Let ("e",List [ConI 1,Prim1 ("!",ConB true)],Var "e")),
+   ("fun next(Int y) = y + 1; next(next(6))",
+    Let
+      ("next",Anon (IntT,"y",Prim2 ("+",Var "y",ConI 1)),
+       Call (Var "next",Call (Var "next",ConI 6)))),
+   ("fun add () = (5, 1-4); add()",
+    Let
+      ("add",Anon (ListT [],"()",List [ConI 5,Prim2 ("-",ConI 1,ConI 4)]),
+       Call (Var "add",List []))),
+   ("var y = (5, 1-4, (5,5)); y",
+    Let
+      ("y",List [ConI 5,Prim2 ("-",ConI 1,ConI 4),List [ConI 5,ConI 5]],
+       Var "y")),
+   ("fun add (Int x,Int y) = y + x; add(3,4)",
+    Let
+      ("add",
+       Anon
+         (ListT [IntT,IntT],"$list",
+          Let
+            ("x",Item (1,Var "$list"),
+             Let ("y",Item (2,Var "$list"),Prim2 ("+",Var "y",Var "x")))),
+       Call (Var "add",List [ConI 3,ConI 4]))),
+   ("fun add (Int x) = fn (Int y) => y+x end; add(1)(3)",
+    Let
+      ("add",Anon (IntT,"x",Anon (IntT,"y",Prim2 ("+",Var "y",Var "x"))),
+       Call (Call (Var "add",ConI 1),ConI 3))),
+   ("ise(true::([Bool] []))",
+    Prim1 ("ise",Prim2 ("::",ConB true,ESeq (SeqT BoolT)))),
+   ("var x = 4;var y = 3;print(x); x + y; print(y)",
+    Let
+      ("x",ConI 4,
+       Let
+         ("y",ConI 3,
+          Prim2
+            (";",Prim1 ("print",Var "x"),
+             Prim2 (";",Prim2 ("+",Var "x",Var "y"),Prim1 ("print",Var "y")))))),
+   ("PlcPrograms/Prog7.plc",
+    Let
+      ("y",ConI 4,
+       Letrec
+         ("f",IntT,"x",IntT,
+          Prim2
+            (";",Prim1 ("print",Var "x"),
+             If
+               (Prim2 ("=",Var "x",ConI 0),ConI 0,
+                Prim2 ("+",Var "x",Call (Var "f",Prim2 ("-",Var "x",ConI 1))))),
+          Call (Var "f",Let ("y",ConI 5,Prim2 ("+",Var "y",ConI 1)))))),
+   ("PlcPrograms/Prog8.plc",
+    Let
+      ("a",ConI 5,
+       Let
+         ("b",Prim2 ("+",Var "a",ConI 1),
+          Let
+            ("f",Anon (IntT,"x",Prim2 ("+",Var "x",Var "b")),
+             Call (Var "f",ConI 3))))),
+   ("PlcPrograms/Prog9.plc",
+    Let
+      ("a",ConI 4,
+       Let
+         ("b",ConI 7,
+          Let
+            ("swap",
+             Anon
+               (ListT [IntT,IntT],"$list",
+                Let
+                  ("x",Item (1,Var "$list"),
+                   Let ("y",Item (2,Var "$list"),List [Var "y",Var "x"]))),
+             Let
+               ("p",Call (Var "swap",List [Var "a",Var "b"]),
+                Let ("p1",Call (Var "swap",Var "p"),Var "p1")))))),
+   ("PlcPrograms/Prog10.plc",
+    Let
+      ("f0",Anon (ListT [],"()",ConI 5),
+       Let
+         ("f1",Anon (IntT,"x",Prim2 ("<",ConI 0,Var "x")),
+          Let
+            ("f2",
+             Anon
+               (ListT [IntT,BoolT],"$list",
+                Let
+                  ("x",Item (1,Var "$list"),
+                   Let
+                     ("b",Item (2,Var "$list"),
+                      Match
+                        (Var "b",
+                         [(SOME (ConB true),Prim2 ("+",Var "x",ConI 1)),
+                          (NONE,Var "x")])))),
+             Let
+               ("f3",
+                Anon
+                  (ListT [IntT,IntT,IntT],"$list",
+                   Let
+                     ("n",Item (1,Var "$list"),
+                      Let
+                        ("x",Item (2,Var "$list"),
+                         Let
+                           ("y",Item (3,Var "$list"),
+                            Prim2 ("+",Prim2 ("*",Var "n",Var "x"),Var "y"))))),
+                Call
+                  (Var "f3",
+                   List
+                     [Call (Var "f0",List []),
+                      Call (Var "f2",List [ConI 3,ConB true]),ConI 10])))))),
+   ("{fun f(Int x) = x + 1 ; fun g(Int x) = 2 * x ;f(2) + g(3)}",
+    Let
+      ("f",Anon (IntT,"x",Prim2 ("+",Var "x",ConI 1)),
+       Let
+         ("g",Anon (IntT,"x",Prim2 ("*",ConI 2,Var "x")),
+          Prim2 ("+",Call (Var "f",ConI 2),Call (Var "g",ConI 3))))),
+   ("var x = true; if x then 10 else 20",
+    Let ("x",ConB true,If (Var "x",ConI 10,ConI 20))),
+   ("var in = 5; fun f(Int x) = if in < 0 then -1 else if in = 0 then 0 else 1; f(in)",
+    Let
+      ("in",ConI 5,
+       Let
+         ("f",
+          Anon
+            (IntT,"x",
+             If
+               (Prim2 ("<",Var "in",ConI 0),Prim1 ("-",ConI 1),
+                If (Prim2 ("=",Var "in",ConI 0),ConI 0,ConI 1))),
+          Call (Var "f",Var "in")))),
+   ("{var x = 5+7; x}",Let ("x",Prim2 ("+",ConI 5,ConI 7),Var "x")),
+   ("var y = 11 ; fun f(Int x) = x + y ;var y = 22 ; f(y)",
+    Let
+      ("y",ConI 11,
+       Let
+         ("f",Anon (IntT,"x",Prim2 ("+",Var "x",Var "y")),
+          Let ("y",ConI 22,Call (Var "f",Var "y"))))),
+   ("fun inc(Int x) = x + 1; fun rec fib(Int n):Int = {fun ge2(Int x) = 1 < x ;  if ge2(n) then fib(n-1) + fib(n-2) else 1}; fib(25)",
+    Let
+      ("inc",Anon (IntT,"x",Prim2 ("+",Var "x",ConI 1)),
+       Letrec
+         ("fib",IntT,"n",IntT,
+          Let
+            ("ge2",Anon (IntT,"x",Prim2 ("<",ConI 1,Var "x")),
+             If
+               (Call (Var "ge2",Var "n"),
+                Prim2
+                  ("+",Call (Var "fib",Prim2 ("-",Var "n",ConI 1)),
+                   Call (Var "fib",Prim2 ("-",Var "n",ConI 2))),ConI 1)),
+          Call (Var "fib",ConI 25)))),
+   ("fun f(Int x) = { fun g(Int y,Int z) = z * y ;g(x,x) + 1}; f(3)",
+    Let
+      ("f",
+       Anon
+         (IntT,"x",
+          Let
+            ("g",
+             Anon
+               (ListT [IntT,IntT],"$list",
+                Let
+                  ("y",Item (1,Var "$list"),
+                   Let ("z",Item (2,Var "$list"),Prim2 ("*",Var "z",Var "y")))),
+             Prim2 ("+",Call (Var "g",List [Var "x",Var "x"]),ConI 1))),
+       Call (Var "f",ConI 3))),
+   ("(true,false)[1]",Item (1,List [ConB true,ConB false])),
+   ("((5,6),false)[1][2]",
+    Item (2,Item (1,List [List [ConI 5,ConI 6],ConB false])))]
+  : (string * expr) list
+Case 36 parsed
+Case 37 parsed
+Case 38 parsed
+Case 39 parsed
+Case 40 parsed
+Case 41 parsed
+Case 42 parsed
+Case 43 parsed
+Case 44 parsed
+Case 45 parsed
+Case 46 parsed
+Case 47 parsed
+Case 48 parsed
+Case 49 parsed
+Case 50 parsed
+Case 51 parsed
+val bad =
+  [("PlcPrograms/Prog6.plc",
+    Letrec
+      ("len",SeqT IntT,"s",IntT,
+       Match
+         (Var "s",
+          [(SOME (Var "E"),ConI 0),
+           (NONE,Prim2 ("+",ConI 1,Call (Var "len",Prim1 ("tl",Var "s"))))]),
+       Let
+         ("next",Anon (IntT,"x",Prim2 ("+",Var "x",ConI 1)),
+          Letrec
+            ("map",ListT [FunT (IntT,IntT),SeqT IntT],"$list",SeqT IntT,
+             Let
+               ("f",Item (1,Var "$list"),
+                Let
+                  ("s",Item (2,Var "$list"),
+                   Match
+                     (Var "s",
+                      [(SOME (Var "E"),Var "E"),
+                       (NONE,
+                        Let
+                          ("x",Prim1 ("hd",Var "s"),
+                           Let
+                             ("t",Prim1 ("tl",Var "s"),
+                              Prim2
+                                ("::",Call (Var "f",Var "x"),
+                                 Call (Var "map",List [Var "f",Var "t"])))))]))),
+             Prim2
+               (";",
+                Prim1
+                  ("print",
+                   Call
+                     (Var "map",
+                      List
+                        [Var "next",
+                         Prim2
+                           ("::",ConI 1,
+                            Prim2 ("::",ConI 2,Prim2 ("::",ConI 3,Var "E")))])),
+                Call
+                  (Var "map",
+                   List
+                     [Anon (IntT,"x",Prim2 ("*",Var "x",Var "x")),
+                      Prim2
+                        ("::",ConI 1,
+                         Prim2
+                           ("::",ConI 2,
+                            Prim2 ("::",ConI 3,Prim2 ("::",ConI 4,Var "E"))))])))))),
+   ("fun rec ignore (Int x):Nil = (); ignore(true)",
+    Letrec ("ignore",IntT,"x",ListT [],List [],Call (Var "ignore",ConB true))),
+   ("if 2 = true then 1 else 0",
+    If (Prim2 ("=",ConI 2,ConB true),ConI 1,ConI 0)),
+   ("if 2 != true then 1 else 0",
+    If (Prim2 ("!=",ConI 2,ConB true),ConI 1,ConI 0)),
+   ("fun rec bad (Int x):Bool = x+1; bad(4)",
+    Letrec
+      ("bad",IntT,"x",BoolT,Prim2 ("+",Var "x",ConI 1),
+       Call (Var "bad",ConI 4))),
+   ("if 1 < 2 then 1 else false",
+    If (Prim2 ("<",ConI 1,ConI 2),ConI 1,ConB false)),
+   ("if 10 then 1 else 0",If (ConI 10,ConI 1,ConI 0)),
+   ("match 10 with end",Match (ConI 10,[])),
+   ("match 10 with | 0 -> 2 | _ -> true end",
+    Match (ConI 10,[(SOME (ConI 0),ConI 2),(NONE,ConB true)])),
+   ("match 10 with | false -> false | _ -> true end",
+    Match (ConI 10,[(SOME (ConB false),ConB false),(NONE,ConB true)])),
+   ("var x = 12; x(1)",Let ("x",ConI 12,Call (Var "x",ConI 1))),
+   ("(1, false)[3]",Item (3,List [ConI 1,ConB false])),
+   ("([Bool][])[1]",Item (1,ESeq (SeqT BoolT))),
+   ("hd (([Int] []))",Prim1 ("hd",ESeq (SeqT IntT))),
+   ("tl (([Int] []))",Prim1 ("tl",ESeq (SeqT IntT))),
+   ("match 10 with | 11 -> false | 12 -> true end",
+    Match (ConI 10,[(SOME (ConI 11),ConB false),(SOME (ConI 12),ConB true)]))]
+  : (string * expr) list
+val it = () : unit
+val interpFile = - : TextIO.outstream
+val caseIdx = ref 1 : int ref
+val writeResult = fn : expr -> unit
+2
+8
+2
+8
+4
+3
+6
+5
+4
+3
+2
+1
+0
+val it =
+  [(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),(),
+   (),(),(),(),(),(),(),(),(),()] : unit list
+val it = () : unit
+./fullTest.sml:42.1-42.36 Warning: type vars not generalized because of
+   value restriction are instantiated to dummy types (X1,X2,...)
