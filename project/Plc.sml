@@ -1,9 +1,9 @@
 (* Plc interpreter main file *)
 
-fun run e =
+fun run exp =
     let 
-        val typeE  =  type2string(teval e [])
-        val valueE =  val2string(eval  e []) 
+        val typeE  =  type2string(teval exp [])
+        val valueE =  val2string(eval  exp []) 
     in
         (valueE)^":"^(typeE)
     end

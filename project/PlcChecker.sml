@@ -18,6 +18,9 @@ exception OpNonList
 fun isSeqType (SeqT t: plcType) = true
   | isSeqType _ = false;
 
+fun auxSeq (SeqT tipo) = tipo
+  | auxSeq _ = raise UnknownType
+
 fun isEqualityType IntT = true
       | isEqualityType BoolT = true
       | isEqualityType (ListT []) = true
@@ -29,8 +32,8 @@ fun isEqualityType IntT = true
 fun isListType (ListT l) = true
   | isListType _ = false;
       
-fun teval (e:expr) (env:plcType env): plcType =
-  case e of
+fun teval (exp:expr) (env:plcType env): plcType =
+  case exp of
       Var x   => lookup env x               (*1*)
     | ConI _  => IntT                       (*2*)
     | ConB _  => BoolT                      (*3 e 4*)
@@ -41,19 +44,19 @@ fun teval (e:expr) (env:plcType env): plcType =
         in
           ListT list
         end
-    | ESeq e => e                           (*7*)
-    | Let (x, e1, e2) =>                    (*8*)
+    | ESeq exp => exp                         (*7*)
+    | Let (x, exp1, exp2) =>                    (*8*)
         let
-          val t1 = teval e1 env
+          val tExp1 = teval exp1 env
         in
-          teval e2 ((x, t1) :: env)
+          teval exp2 ((x, tExp1) :: env)
         end
-    | Letrec (f, t, x, t1, e1, e2) =>       (*9*)
+    | Letrec (f, t, x, tExp1, exp1, exp2) =>       (*9*)
         let
-          val te1 = teval e1 ((f, (FunT(t, t1)))::(x, t)::env)
-          val t2 = teval e2 ((f, (FunT(t, t1)))::env)
+          val te1 = teval exp1 ((f, (FunT(t, tExp1)))::(x, t)::env)
+          val tExp2 = teval exp2 ((f, (FunT(t, tExp1)))::env)
         in
-          if t1 = te1 then t2 else raise WrongRetType
+          if tExp1 = te1 then tExp2 else raise WrongRetType
         end
     | Anon (plcType, s, e) =>                (*10*)
         let
@@ -88,113 +91,38 @@ fun teval (e:expr) (env:plcType env): plcType =
         in
           aux l env
         end
-    | Prim1("!", e) => if teval e env = BoolT then BoolT else raise UnknownType (* 14 *)
-    | Prim1("-", e) => if teval e env = IntT then IntT else raise UnknownType (* 15 *)
-    | Prim1("hd", e) => (* 16 *)
-        let
-          fun aux (SeqT tipo) = tipo
-            | aux _ = raise UnknownType
-          val t = teval e env
-        in
-          if isSeqType t then aux t else raise UnknownType
-        end
-    | Prim1("tl", e) => (* 17 *)
-        let
-          val t = teval e env
-        in
-          if isSeqType t then t else raise UnknownType
-        end
-    | Prim1("ise", e) => (* 18 *)
-        let
-          val t = teval e env
-        in
-          if isSeqType t then BoolT else raise UnknownType
-        end
-    | Prim1("print", e) => (* 19 *)
-        let
-          val t = teval e env
-        in
-          ListT [] 
-        end  
-    | Prim2("&&", e1, e2) => (* 20 *)
-        let
-          val te1 = teval e1 env
-          val te2 = teval e2 env
-        in
-          if te1 = BoolT andalso te2 = BoolT then BoolT else raise UnknownType
-        end
-    | Prim2("::", e1, e2) => (* 21 *)
-        let
-          fun aux (SeqT tipo) = tipo
-            | aux _ = raise UnknownType
-          val t1 = teval e1 env
-          val t2 = teval e2 env
-        in
-          if t1 = (aux t2) then t2 else raise NotEqTypes
-        end
-    | Prim2("+", e1, e2) => (* 22 *)
-        let
-          val te1 = teval e1 env
-          val te2 = teval e2 env
-        in
-          if te1 = IntT andalso te2 = IntT then IntT else raise UnknownType
-        end
-    | Prim2("-", e1, e2) => (* 22 *)
-        let
-          val te1 = teval e1 env
-          val te2 = teval e2 env
-        in
-          if te1 = IntT andalso te2 = IntT then IntT else raise UnknownType
-        end
-    | Prim2("*", e1, e2) => (* 22 *)
-        let
-          val te1 = teval e1 env
-          val te2 = teval e2 env
-        in
-          if te1 = IntT andalso te2 = IntT then IntT else raise UnknownType
-        end
-    | Prim2("/", e1, e2) => (* 22 *)
-        let
-          val te1 = teval e1 env
-          val te2 = teval e2 env
-        in
-          if te1 = IntT andalso te2 = IntT then IntT else raise UnknownType
-        end
-    | Prim2("<", e1, e2) => (* 23 *)
-        let
-          val te1 = teval e1 env
-          val te2 = teval e2 env
-        in
-          if te1 = IntT andalso te2 = IntT then BoolT else raise UnknownType
-        end
-    | Prim2("<=", e1, e2) => (* 23 *)
-        let
-          val te1 = teval e1 env
-          val te2 = teval e2 env
-        in
-          if te1 = IntT andalso te2 = IntT then BoolT else raise UnknownType
-        end
-    | Prim2("=", e1, e2) => (* 24 *)
-        let
-          val te1 = teval e1 env
-          val te2 = teval e2 env
-        in
-          if not (isEqualityType te1) orelse not (isEqualityType te2) then raise UnknownType else if te1 = te2 then BoolT else raise NotEqTypes
-        end
-    | Prim2("!=", e1, e2) => (* 24 *)
-        let
-          val te1 = teval e1 env
-          val te2 = teval e2 env
-        in
-          if not (isEqualityType te1) orelse not (isEqualityType te2) then raise UnknownType else if te1 = te2 then BoolT else raise NotEqTypes
-        end
-    | Prim2 (";", e1, e2) => (* 26 *)
-        let
-          val t1 = teval e1 env
-          val t2 = teval e2 env
-        in
-          t2
-        end
+    | Prim1 (s, exp) =>
+      let
+        val tExp = teval exp env;
+      in
+        case s of
+        ("!") => if tExp = BoolT then BoolT else raise UnknownType
+        | ("-") => if tExp = IntT then IntT else raise UnknownType
+        | ("hd") => if isSeqType tExp then auxSeq tExp else raise UnknownType
+        | ("tl") => if isSeqType tExp then tExp else raise UnknownType
+        | ("ise") => if isSeqType tExp then BoolT else raise UnknownType
+        | ("print") => ListT []
+        | _ => raise UnknownType
+      end
+    | Prim2 (s, exp1, exp2) =>
+      let 
+        val tExp1 = teval exp1 env;
+        val tExp2 = teval exp2 env
+      in
+        case s of
+          ("&&") => if (tExp1 = BoolT) andalso (tExp2 = BoolT) then BoolT else raise UnknownType
+          | ("::") => if (tExp1 = (auxSeq tExp2)) then tExp2 else raise NotEqTypes
+          | ("+") => if (tExp1 = IntT) andalso (tExp2 = IntT) then IntT else raise UnknownType 
+          | ("-") => if (tExp1 = IntT) andalso (tExp2 = IntT) then IntT else raise UnknownType 
+          | ("*") => if (tExp1 = IntT) andalso (tExp2 = IntT) then IntT else raise UnknownType 
+          | ("/") => if (tExp1 = IntT) andalso (tExp2 = IntT) then IntT else raise UnknownType 
+          | ("<") => if (tExp1 = IntT) andalso (tExp2 = IntT) then BoolT else raise UnknownType 
+          | ("<=") => if (tExp1 = IntT) andalso (tExp2 = IntT) then BoolT else raise UnknownType 
+          | ("=") => if not (isEqualityType tExp1) orelse not (isEqualityType tExp2) then raise UnknownType else if (tExp1 = tExp2) then BoolT else raise NotEqTypes 
+          | ("!=") => if not (isEqualityType tExp1) orelse not (isEqualityType tExp2) then raise UnknownType else if tExp1 = tExp2 then BoolT else raise NotEqTypes 
+          | (";") => tExp2
+          | _ => raise UnknownType
+      end
     | Item (i, List []) => raise ListOutOfRange (* 25 *)
     | Item (1, List (h::t)) => teval h env
     | Item (i, List (h::t)) => teval (Item (i-1, (List t))) env
@@ -206,6 +134,4 @@ fun teval (e:expr) (env:plcType env): plcType =
             | aux i (ListT (h::t)) = aux (i-1) (ListT t)
         in 
           if isListType t then aux i t else raise OpNonList 
-        end
-    
-    | _ => raise UnknownType;
+        end;
