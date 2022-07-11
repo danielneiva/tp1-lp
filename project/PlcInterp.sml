@@ -8,10 +8,10 @@ exception NotAFunc
 
 fun eval (e:expr) (env:plcVal env) : plcVal =
   case e of
-	  Var x => lookup env x
+	  Var x  => lookup env x
     | ConI i => IntV i
     | ConB b => BoolV b
-	| List(i) =>
+	| List i =>
       let
         fun evalList (i:expr list) (st:plcVal env) : plcVal list =
           case i of
@@ -22,9 +22,9 @@ fun eval (e:expr) (env:plcVal env) : plcVal =
       end
     | ESeq t => SeqV []
     | Let (x, e1, e2) => eval e2 ((x, (eval e1 env))::env)
-    | Letrec(funcname, vartype, varname, functype, funcbody, prog) =>
-      eval prog ((funcname, Clos (funcname, varname, funcbody, env))::env)
-    | Anon(vartype, varname, funcbody) => Clos("", varname, funcbody, env)
+    | Letrec(fName, vType, vName, fType, fBody, prog) =>
+      eval prog ((fName, Clos (fName, vName, fBody, env))::env)
+    | Anon(vType, vName, fBody) => Clos("", vName, fBody, env)
 	| Call (e2, e1) =>
         let 
 			val func = eval e2 env 
@@ -44,7 +44,7 @@ fun eval (e:expr) (env:plcVal env) : plcVal =
         val test = eval c env
       in
         case test of
-          (BoolV result) => if result then (eval texp env) else (eval elexp env)
+          BoolV result => if result then (eval texp env) else (eval elexp env)
         | _ => raise Impossible
       end
     | Match(e, options) =>
@@ -121,12 +121,12 @@ fun eval (e:expr) (env:plcVal env) : plcVal =
     | Item(index, ite) =>
       let
         val itemeval = eval ite env;
-        fun findIndex (curr: int) (xs::t : plcVal list) : plcVal =
-            if (curr = index) then xs else if (curr > index) then raise Impossible else findIndex (curr + 1) t
-          | findIndex _ [] = raise Impossible
+        fun findID (curr: int) (xs::t : plcVal list) : plcVal =
+            if (curr = index) then xs else if (curr > index) then raise Impossible else findID (curr + 1) t
+          | findID _ [] = raise Impossible
       in
         case itemeval of
-          ListV(items) => findIndex 1 items
+          ListV i => findID 1 i
         | _ => raise Impossible
     	end
 	;
